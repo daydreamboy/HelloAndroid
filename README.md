@@ -13,7 +13,7 @@
 
 ### (2) 创建Android工程
 
-打开Android Studio，选择File > New > New Project...，在弹出提示框中选择“Empty Activity”，Android Studio会创建一个带部分代码的工程。可以参考这篇Android官方文档[^1]，创建个HelloWorld应用。
+打开Android Studio，选择File > New > New Project...，在弹出提示框中选择“Empty Activity”模板，Android Studio会创建一个带部分代码的工程。可以参考这篇Android官方文档[^1]，创建个HelloWorld应用。后面提到的Android工程，都是指Android Studio创建的工程。
 
 > 示例代码，见HelloWorld
 
@@ -47,7 +47,9 @@ app
 └── src
 ```
 
-上面src放源码，而libs放依赖库。
+* src放源码
+* libs放依赖库
+* build放编译的产物
 
 再看看src下面的内容，如下
 
@@ -102,27 +104,239 @@ app/src
 
 说明
 
-> 如果还有其他语言，和java同级，还有其他文件夹，例如cpp，用于Android的JNI
+> 如果还有其他语言，和java同级，还有其他文件夹，例如cpp，用于Android上C++开发
 
 
 
 ## 2、使用C++代码
 
+在Android开发中可以使用C/C++代码开发，Android系统提供NDK(Native Development Kit)工具，它是包含一套工具，包括JVM虚拟机支持调用C++代码、JNI接口定义规范，以及编译C/C++的工具CMake和ndk-build等。
+
+在Android Studio中现在默认使用CMake工具，而废弃ndk-build工具[^2]（在早期Android Studio工程还可以看到ndk-build相关配置文件，例如Android.mk文件）。
+
+一般需要使用NDK开发有两种情况[^2]
+
+* 为了性能考虑，计算密集型的执行，使用C/C++实现，性能比Java快
+* 复用已有的C/C++库
+
+后面提到的NDK开发特指Android上C/C++开发
+
+
+
 ### (1) Android应用编译C++源码
 
-新建工程，在Phonen and Tablet下面选择Native C++，C++ Standard选择Toolchain Default。创建好的工程，默认已经有C++代码和使用C++ JNI接口的kotlin代码。
+为了清楚介绍，Android工程如何集成和配置编译成C++源码，这里不采用Native C++模板，而是新建工程采用“Empty Activity”模板，它不带任何C++相关的配置。
+
+说明
+
+> 新建工程，在Phonen and Tablet下面选择Native C++这个模板，C++ Standard选择Toolchain Default。创建好的工程，默认已经有C++代码和使用JNI接口的kotlin代码。如果了解清楚C++相关配置文件，可以采用这个方式快速搭建C++开发。
 
 
 
-NDK开发
+#### a. 准备cpp源码文件夹
 
-https://developer.android.com/ndk/guides?hl=zh-cn
+在main文件夹新建cpp文件夹，并把C++源码放在这个文件夹下。
+
+举个例子，如下
+
+```shell
+$ tree app/src/main/cpp 
+app/src/main/cpp
+├── helloNativeLib.cpp
+└── helloNativeLib.hpp
+```
+
+helloNativeLib.hpp，内容如下
+
+```c++
+#pragma once
+
+#include <memory>
+#include <string>
+
+namespace HelloNativeLib {
+
+class HelloWorld {
+public:
+    virtual ~HelloWorld() {}
+
+    static std::shared_ptr<HelloWorld> create();
+
+    virtual std::string fromCpp() = 0;
+};
+
+}  // namespace HelloNativeLib
+```
+
+helloNativeLib.cpp，内容如下
+
+```c++
+#include "helloNativeLib.hpp"
+
+using namespace HelloNativeLib;
+
+class HelloWorldImpl : public HelloWorld {
+public:
+    // Note: should re-declare again for static member function
+    static std::shared_ptr<HelloWorld> create();
+    // Note: should re-declare again for pure virtual function
+    std::string fromCpp() /*override*/;
+};
+
+std::shared_ptr<HelloWorld> HelloWorld::create() {
+    return std::make_shared<HelloWorldImpl>();
+}
+
+// Override the pure virtual function in super class
+std::string HelloWorldImpl::fromCpp() {
+    return "Hello From C++!";
+}
+```
 
 
 
-关联Gradle
+#### b. 配置CMakeLists.txt
 
-https://developer.android.com/studio/projects/gradle-external-native-builds?hl=zh-cn#groovy
+在cpp文件夹下，添加CMakeLists.txt，注意一定是这个命名。
+
+它的内容，如下
+
+```cmake
+# Sets the minimum version of CMake required to build your native library.
+# This ensures that a certain set of CMake features is available to
+# your build.
+cmake_minimum_required(VERSION 3.22.1)
+
+# Declares and names the project.
+project("helloNativeLib")
+
+# Specifies a library name, specifies whether the library is STATIC or
+# SHARED, and provides relative paths to the source code. You can
+# define multiple libraries by adding multiple add_library() commands,
+# and CMake builds them for you. When you build your app, Gradle
+# automatically packages shared libraries with your APK.
+
+add_library( # Specifies the name of the library.
+        helloNativeLib
+
+        # Sets the library as a shared library.
+        SHARED
+
+        # Provides a relative path to your source file(s).
+        helloNativeLib.cpp )
+
+# Specifies a path to native header files.
+include_directories(src/main/cpp/include/)
+
+find_library( # Defines the name of the path variable that stores the
+        # location of the NDK library.
+        log-lib
+
+        # Specifies the name of the NDK library that
+        # CMake needs to locate.
+        log )
+
+# Links your native library against one or more other native libraries.
+target_link_libraries( # Specifies the target library.
+        helloNativeLib
+
+        # Links the log library to the target library.
+        ${log-lib} )
+```
+
+关于上面的字段可以参考这篇官方文档[^3]。这里介绍部分字段
+
+* cmake_minimum_required，用于配置CMake的最低版本，保证使用特定feature功能。
+  * 这里的最低版本号，可以参考Android Studio的Native C++模板中的CMakeLists.txt
+* project，定义CMake工程的名字。这个是必选字段。
+* add_library，定义一个库，它有三个参数
+  * 第一个参数，是库的名字。这里命名为helloNativeLib
+  * 第二个参数，设置STATIC或者SHARED，即静态库或者动态库（也称为共享库）
+  * 第三个参数，C++源文件的路径，即cpp文件的路径，可以有多个。注意：相对路径是指相对于CMakeLists.txt文件。
+* include_directories，指定C++头文件的搜索路径。如果有很多公共头文件，可以放在这个路径下面，然后在cpp文件中，使用双引号方式引入
+* find_library，用于指定C++依赖库，如果自己开发的C++代码，需要其他的C++库，则使用这个字段。
+  * 第一个参数，用于定义一个依赖库的名字，这里是log-lib。
+  * 第二个参数，实际要依赖库的名字，这里是log。它是NDK API[^5]提供的C++库。
+
+* target_link_libraries，用于建立依赖关系
+  * 第一个参数，用于定义target libray。这里是helloNativeLib
+  * 第二个参数，用于定义依赖库的名字，它是个引用的名字，使用`$`引用。这里是${log-lib}
+
+> 关于更多CMake字段的使用，参考CMake文档[^4]
+
+
+
+#### c. 配置gradle
+
+完成上面CMakeLists.txt的配置，需要在build.gradle文件中配置下，让gradle能执行cmake。配置内容[^6]，如下
+
+```groovy
+android {
+    ...
+    
+    // Encapsulates your external native build configurations.
+    externalNativeBuild {
+        // Encapsulates your CMake build configurations.
+        cmake {
+            // Provides a relative path to your CMake build script.
+            path file('src/main/cpp/CMakeLists.txt')
+        }
+    }
+}
+
+```
+
+这里的CMakeLists.txt相对路径，是相对于build.gradle文件
+
+完成上面配置，可以尝试编译下C++代码。
+
+在Android Studio中，选择Build > Build Bundle(s)/APK(s) > Build APK(s)，在Android Studio找到Build tab，查看编译信息。如果编译成功，会看到最后的信息，如下
+
+```shell
+...
+BUILD SUCCESSFUL in 3s
+35 actionable tasks: 10 executed, 25 up-to-date
+
+Build Analyzer results available
+```
+
+如果要确认apk中，是否包含C++的动态库，可以在Android Studio中，选择Build > Analyze APK...，在弹出框中选择apk，Android Studio会显示，如下
+
+<img src="images/01_analyze_apk.png" style="zoom:50%; float:left;" />
+
+可以看到在apk的lib文件夹下，有不同CPU架构的文件夹，下面对应刚才CMakeLists.txt命名的helloNativeLib，在CMake编译约定中，库的命名按照lib{library-name}.so格式。
+
+可以找到刚才Android Studio打开apk的位置，它位于app/build/outputs/apk/debug下面，解压这个apk文件（修改后缀名为zip然后解压），查看下面4个so文件的架构，如下
+
+```shell
+$ cd app/build/outputs/apk/debug/app-debug.apk/lib
+$ file x86/libhelloNativeLib.so 
+x86/libhelloNativeLib.so: ELF 32-bit LSB shared object, Intel 80386, version 1 (SYSV), dynamically linked, BuildID[sha1]=6f70d07d04d01f433b18c235b72540d688fe72b2, stripped
+$ file x86_64/libhelloNativeLib.so
+x86_64/libhelloNativeLib.so: ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, BuildID[sha1]=c6222516d55dde744009a899004e761e98e85b33, stripped
+$ file arm64-v8a/libhelloNativeLib.so 
+arm64-v8a/libhelloNativeLib.so: ELF 64-bit LSB shared object, ARM aarch64, version 1 (SYSV), dynamically linked, BuildID[sha1]=2e0616b4ac48c9b63007a511d2f41ca29eefe405, stripped
+$ file armeabi-v7a/libhelloNativeLib.so 
+armeabi-v7a/libhelloNativeLib.so: ELF 32-bit LSB shared object, ARM, EABI5 version 1 (SYSV), dynamically linked, BuildID[sha1]=88195ed3af37ea69309c2f035a17e3552cc6822a, stripped
+```
+
+可见Android Studio编译so为32位和64位，同时支持模拟器和真机架构。
+
+
+
+#### d. 加载C++动态库
+
+
+
+#### e. 使用JNI接口
+
+
+
+
+
+TODO
+
+https://bowser--f-medium-com.translate.goog/link-c-c-library-dependencies-to-your-own-c-c-code-in-an-android-application-using-cmake-79a165202ff9?_x_tr_sl=en&_x_tr_tl=zh-CN&_x_tr_hl=zh-CN&_x_tr_pto=sc
 
 
 
@@ -153,3 +367,9 @@ https://developer.android.com/courses/kotlin-android-fundamentals/overview?hl=zh
 ## References
 
 [^1]:https://developer.android.com/codelabs/basic-android-kotlin-compose-first-app?continue=https%3A%2F%2Fdeveloper.android.com%2Fcourses%2Fpathways%2Fandroid-basics-compose-unit-1-pathway-2%23codelab-https%3A%2F%2Fdeveloper.android.com%2Fcodelabs%2Fbasic-android-kotlin-compose-first-app&%3Bhl=zh-cn&hl=zh-cn#0
+[^2]:https://developer.android.com/ndk/guides?hl=zh-cn
+[^3]:https://developer.android.com/studio/projects/configure-cmake?hl=zh-cn
+[^4]:https://cmake.org/cmake/help/latest/index.html
+[^5]:https://developer.android.com/ndk/reference
+[^6]:https://developer.android.com/studio/projects/gradle-external-native-builds?hl=zh-cn#groovy
+
