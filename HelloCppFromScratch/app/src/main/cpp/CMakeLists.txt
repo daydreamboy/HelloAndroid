@@ -19,7 +19,8 @@ add_library( # Specifies the name of the library.
         SHARED
 
         # Provides a relative path to your source file(s).
-        helloNativeLib.cpp )
+        helloNativeLib.cpp
+        jni.cpp)
 
 # Specifies a path to native header files.
 include_directories(src/main/cpp/include/)

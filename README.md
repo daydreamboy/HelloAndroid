@@ -300,7 +300,7 @@ BUILD SUCCESSFUL in 3s
 Build Analyzer results available
 ```
 
-如果要确认apk中，是否包含C++的动态库，可以在Android Studio中，选择Build > Analyze APK...，在弹出框中选择apk，Android Studio会显示，如下
+如果要确认apk中，是否包含C++的动态库[^7]，可以在Android Studio中，选择Build > Analyze APK...，在弹出框中选择apk，Android Studio会显示，如下
 
 <img src="images/01_analyze_apk.png" style="zoom:50%; float:left;" />
 
@@ -320,19 +320,189 @@ $ file armeabi-v7a/libhelloNativeLib.so
 armeabi-v7a/libhelloNativeLib.so: ELF 32-bit LSB shared object, ARM, EABI5 version 1 (SYSV), dynamically linked, BuildID[sha1]=88195ed3af37ea69309c2f035a17e3552cc6822a, stripped
 ```
 
-可见Android Studio编译so为32位和64位，同时支持模拟器和真机架构。
+可见Android Studio编译so为32位和64位，同时支持模拟器和真机架构，而且so文件不同于iOS/MacOS上的MachO格式，它是ELF格式。
 
 
 
 #### d. 加载C++动态库
 
+在调用C++接口之前，需要加载C++动态库。
+
+如果是Kotlin，加载方式，如下
+
+```kotlin
+class MainActivity : ComponentActivity() {
+  ...
+  companion object {
+      init {
+          System.loadLibrary("helloNativeLib");
+      }
+  }
+}
+```
+
+如果是Java，加载方式，如下
+
+```java
+static {
+    System.loadLibrary("helloNativeLib");
+}
+```
+
+注意：loadLibrary函数的参数是动态库的名字，而不是动态库的文件名
+
 
 
 #### e. 使用JNI接口
 
+JNI(Java Native Interface)是Java虚拟机提供Java调用C++代码的一种方式，它属于Java虚拟机的能力，和Android系统没有关系。
+
+> 如果要详细学习JNI的能力，可以参考Java的官方文档[^8]
+
+这里直接参考Android的文档[^9]，介绍如何使用JNI接口。
+
+实际上，Java不能直接调用C++代码，而是在Java侧声明Java函数，而C++侧定义好这个声明对应的C++实现，即JNI规范的C++函数（后面称这个函数为JNI接口），然后在这个JNI接口中，再调用自定义C++库的函数。
+
+下面按照几个步骤，实现Java调用C++代码
+
+* Java/Kotlin声明外部函数
+* 定义JNI接口
 
 
 
+##### Java/Kotlin声明外部函数
+
+Kotlin的声明，如下
+
+```kotlin
+class MainActivity : ComponentActivity() {
+    ...
+    external fun stringFromJNI(): String
+}
+```
+
+Java的声明，如下
+
+```java
+public native String stringFromJNI();
+```
+
+说明
+
+> stringFromJNI函数的声明可以在类中，也可以文件域中。这会影响JNI接口函数的命名规则。
+
+
+
+##### 定义JNI接口
+
+为了代码结构清晰，这里在cpp文件夹新建一个jni.cpp，内容如下
+
+```c++
+#include <jni.h>
+#include <string>
+#include "helloNativeLib.hpp"
+
+using namespace HelloNativeLib;
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_wc_hellocppfromscratch_MainActivity_stringFromJNI(JNIEnv* env, jobject /* this */) {
+    std::shared_ptr<HelloWorld> helloWorld = HelloWorld::create();
+    std::string hello = helloWorld->fromCpp();
+    return env->NewStringUTF(hello.c_str());
+}
+```
+
+在CMakeLists.txt添加jni.cpp，如下
+
+```cmake
+add_library( # Specifies the name of the library.
+        helloNativeLib
+
+        # Sets the library as a shared library.
+        SHARED
+
+        # Provides a relative path to your source file(s).
+        helloNativeLib.cpp
+        jni.cpp)
+```
+
+
+
+这里简单介绍JNI规范，函数名Java_com_wc_hellocppfromscratch_MainActivity_stringFromJNI，用于Java虚拟机能将Java侧的函数声明和这里函数实现能匹配上。
+
+* 必须使用`Java_`前缀
+* com_wc_hellocppfromscratch是包路径
+* MainActivity是`.java`文件或者`.kt`文件，去掉扩展名的名字。
+* stringFromJNI是Java侧声明的函数名
+
+这里`JNIEnv*` 是指向虚拟机的指针，`jobject` 是指向从 Java 端传递的隐式 `this` 对象的指针。
+
+Java_com_wc_hellocppfromscratch_MainActivity_stringFromJNI函数返回jstring，是JNI规范定义的数据类型，它不是字符串，而是指向Java字符串的指针。使用env指针调用NewStringUTF方法，将c字符串转成jstring类型。
+
+
+
+回到Java侧的MainActivity.kt文件，修改代码，如下
+
+```kotlin
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContent {
+        HelloCppFromScratchTheme {
+            // A surface container using the 'background' color from the theme
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                var text = stringFromJNI()
+                Greeting(text)
+            }
+        }
+    }
+}
+```
+
+这里调用stringFromJNI函数，将返回值传给Greeting函数。用Android Studio编译和运行app，可以看到UI上显示“Hello from C++”
+
+
+
+#### f. 使用NDK API接口
+
+Android的NDK提供一套C++ API[^5]，方便开发者直接调用相关C++库，例如打日志能力，这里介绍如何使用这些API。
+
+在上面CMakeLists.txt中，已经集成NDK中一个名为log库，那么可以使用库的C++接口。
+
+在helloNativeLib.cpp，添加下面代码，如下
+
+```c++
+#include "helloNativeLib.hpp"
+
+#include <android/log.h>
+
+... 
+
+std::shared_ptr<HelloWorld> HelloWorld::create() {
+    __android_log_print(ANDROID_LOG_DEBUG, "NativeLibTag", "%s object created", "HelloWorldImpl");
+
+    return std::make_shared<HelloWorldImpl>();
+}
+
+// Override the pure virtual function in super class
+std::string HelloWorldImpl::fromCpp() {
+    __android_log_print(ANDROID_LOG_DEBUG, "NativeLibTag", "%s function called", "HelloWorldImpl::fromCpp");
+
+    return "Hello From C++!";
+}
+```
+
+这里导入`<android/log.h>`头文件[^10]，并调用该头文件中的`__android_log_print`，它的签名可以在NDK API手册[^11]查询到。
+
+它的日志输出是在LogCat中，如下
+
+![](images/02_filter_tag_in_LogCat.png)
+
+
+
+### (2) Android应用集成C++动态库
 
 TODO
 
@@ -372,4 +542,9 @@ https://developer.android.com/courses/kotlin-android-fundamentals/overview?hl=zh
 [^4]:https://cmake.org/cmake/help/latest/index.html
 [^5]:https://developer.android.com/ndk/reference
 [^6]:https://developer.android.com/studio/projects/gradle-external-native-builds?hl=zh-cn#groovy
+[^7]:https://developer.android.com/studio/projects/add-native-code?hl=zh-cn
+[^8]:https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/jniTOC.html
+[^9]:https://developer.android.com/ndk/samples/sample_hellojni?hl=zh-cn
+[^10]:https://stackoverflow.com/questions/19186915/cant-include-ndk-header-files
+[^11]:https://developer.android.com/ndk/reference/group/logging
 

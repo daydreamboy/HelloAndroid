@@ -13,6 +13,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.wc.hellocppfromscratch.ui.theme.HelloCppFromScratchTheme
 
 class MainActivity : ComponentActivity() {
+    companion object {
+        init {
+            System.loadLibrary("helloNativeLib");
+        }
+    }
+
+    /**
+     * A native method that is implemented by the 'helloNativeLib' native library,
+     * which is packaged with this application.
+     */
+    external fun stringFromJNI(): String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -22,7 +34,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("Android")
+                    var text = stringFromJNI()
+                    Greeting(text)
                 }
             }
         }
@@ -32,7 +45,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
-        text = "Hello $name!",
+        text = "$name!",
         modifier = modifier
     )
 }
