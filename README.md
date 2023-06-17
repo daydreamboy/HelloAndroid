@@ -322,6 +322,8 @@ armeabi-v7a/libhelloNativeLib.so: ELF 32-bit LSB shared object, ARM, EABI5 versi
 
 可见Android Studio编译so为32位和64位，同时支持模拟器和真机架构，而且so文件不同于iOS/MacOS上的MachO格式，它是ELF格式。
 
+> 使用`objdump -x libhelloNativeLib.so`，可以查看更详细的二进制信息
+
 
 
 #### d. 加载C++动态库
