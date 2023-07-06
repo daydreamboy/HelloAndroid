@@ -506,6 +506,14 @@ std::string HelloWorldImpl::fromCpp() {
 
 ### (2) Android应用集成C++动态库
 
+
+
+a. 准备so文件
+
+3、Android Studio
+
+
+
 TODO
 
 https://bowser--f-medium-com.translate.goog/link-c-c-library-dependencies-to-your-own-c-c-code-in-an-android-application-using-cmake-79a165202ff9?_x_tr_sl=en&_x_tr_tl=zh-CN&_x_tr_hl=zh-CN&_x_tr_pto=sc
