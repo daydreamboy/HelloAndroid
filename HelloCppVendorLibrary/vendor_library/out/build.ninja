@@ -11,7 +11,7 @@
 # =============================================================================
 
 # =============================================================================
-# Project: helloNativeLib
+# Project: Project
 # Configurations: Debug
 # =============================================================================
 
@@ -39,63 +39,107 @@ include CMakeFiles/rules.ninja
 #############################################
 # Logical path to working directory; prefix for absolute paths.
 
-cmake_ninja_workdir = /Users/wesley_chen/GitHub_Projects/HelloAndroid/temp/cpp/out/
+cmake_ninja_workdir = /Users/wesley_chen/GitHub_Projects/HelloAndroid/HelloCppVendorLibrary/vendor_library/out/
 # =============================================================================
-# Object build statements for SHARED_LIBRARY target helloNativeLib
+# Object build statements for SHARED_LIBRARY target helloSharedLib
 
 
 #############################################
-# Order-only phony target for helloNativeLib
+# Order-only phony target for helloSharedLib
 
-build cmake_object_order_depends_target_helloNativeLib: phony || CMakeFiles/helloNativeLib.dir
+build cmake_object_order_depends_target_helloSharedLib: phony || CMakeFiles/helloSharedLib.dir
 
-build CMakeFiles/helloNativeLib.dir/helloNativeLib.cpp.o: CXX_COMPILER__helloNativeLib_Debug /Users/wesley_chen/GitHub_Projects/HelloAndroid/temp/cpp/helloNativeLib.cpp || cmake_object_order_depends_target_helloNativeLib
-  DEFINES = -DhelloNativeLib_EXPORTS
-  DEP_FILE = CMakeFiles/helloNativeLib.dir/helloNativeLib.cpp.o.d
+build CMakeFiles/helloSharedLib.dir/helloSharedLib.cpp.o: CXX_COMPILER__helloSharedLib_Debug /Users/wesley_chen/GitHub_Projects/HelloAndroid/HelloCppVendorLibrary/vendor_library/helloSharedLib.cpp || cmake_object_order_depends_target_helloSharedLib
+  DEFINES = -DhelloSharedLib_EXPORTS
+  DEP_FILE = CMakeFiles/helloSharedLib.dir/helloSharedLib.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fno-limit-debug-info  -fPIC
-  INCLUDES = -I/Users/wesley_chen/GitHub_Projects/HelloAndroid/temp/cpp/src/main/cpp/include
-  OBJECT_DIR = CMakeFiles/helloNativeLib.dir
-  OBJECT_FILE_DIR = CMakeFiles/helloNativeLib.dir
-  TARGET_COMPILE_PDB = CMakeFiles/helloNativeLib.dir/
-  TARGET_PDB = libhelloNativeLib.pdb
+  INCLUDES = -I/Users/wesley_chen/GitHub_Projects/HelloAndroid/HelloCppVendorLibrary/vendor_library/src/main/cpp/include
+  OBJECT_DIR = CMakeFiles/helloSharedLib.dir
+  OBJECT_FILE_DIR = CMakeFiles/helloSharedLib.dir
+  TARGET_COMPILE_PDB = CMakeFiles/helloSharedLib.dir/
+  TARGET_PDB = libhelloSharedLib.pdb
 
-build CMakeFiles/helloNativeLib.dir/jni.cpp.o: CXX_COMPILER__helloNativeLib_Debug /Users/wesley_chen/GitHub_Projects/HelloAndroid/temp/cpp/jni.cpp || cmake_object_order_depends_target_helloNativeLib
-  DEFINES = -DhelloNativeLib_EXPORTS
-  DEP_FILE = CMakeFiles/helloNativeLib.dir/jni.cpp.o.d
+build CMakeFiles/helloSharedLib.dir/jni_helloSharedLib.cpp.o: CXX_COMPILER__helloSharedLib_Debug /Users/wesley_chen/GitHub_Projects/HelloAndroid/HelloCppVendorLibrary/vendor_library/jni_helloSharedLib.cpp || cmake_object_order_depends_target_helloSharedLib
+  DEFINES = -DhelloSharedLib_EXPORTS
+  DEP_FILE = CMakeFiles/helloSharedLib.dir/jni_helloSharedLib.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fno-limit-debug-info  -fPIC
-  INCLUDES = -I/Users/wesley_chen/GitHub_Projects/HelloAndroid/temp/cpp/src/main/cpp/include
-  OBJECT_DIR = CMakeFiles/helloNativeLib.dir
-  OBJECT_FILE_DIR = CMakeFiles/helloNativeLib.dir
-  TARGET_COMPILE_PDB = CMakeFiles/helloNativeLib.dir/
-  TARGET_PDB = libhelloNativeLib.pdb
+  INCLUDES = -I/Users/wesley_chen/GitHub_Projects/HelloAndroid/HelloCppVendorLibrary/vendor_library/src/main/cpp/include
+  OBJECT_DIR = CMakeFiles/helloSharedLib.dir
+  OBJECT_FILE_DIR = CMakeFiles/helloSharedLib.dir
+  TARGET_COMPILE_PDB = CMakeFiles/helloSharedLib.dir/
+  TARGET_PDB = libhelloSharedLib.pdb
 
 
 # =============================================================================
-# Link build statements for SHARED_LIBRARY target helloNativeLib
+# Link build statements for SHARED_LIBRARY target helloSharedLib
 
 
 #############################################
-# Link the shared library libhelloNativeLib.so
+# Link the shared library libhelloSharedLib.so
 
-build libhelloNativeLib.so: CXX_SHARED_LIBRARY_LINKER__helloNativeLib_Debug CMakeFiles/helloNativeLib.dir/helloNativeLib.cpp.o CMakeFiles/helloNativeLib.dir/jni.cpp.o | /Users/wesley_chen/Library/Android/sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/x86_64-linux-android/33/liblog.so
+build libhelloSharedLib.so: CXX_SHARED_LIBRARY_LINKER__helloSharedLib_Debug CMakeFiles/helloSharedLib.dir/helloSharedLib.cpp.o CMakeFiles/helloSharedLib.dir/jni_helloSharedLib.cpp.o | /Users/wesley_chen/Library/Android/sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/x86_64-linux-android/33/liblog.so
   LANGUAGE_COMPILE_FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fno-limit-debug-info
   LINK_FLAGS = -static-libstdc++ -Wl,--build-id=sha1 -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments
   LINK_LIBRARIES = /Users/wesley_chen/Library/Android/sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/x86_64-linux-android/33/liblog.so  -latomic -lm
-  OBJECT_DIR = CMakeFiles/helloNativeLib.dir
+  OBJECT_DIR = CMakeFiles/helloSharedLib.dir
   POST_BUILD = :
   PRE_LINK = :
-  SONAME = libhelloNativeLib.so
+  SONAME = libhelloSharedLib.so
   SONAME_FLAG = -Wl,-soname,
-  TARGET_COMPILE_PDB = CMakeFiles/helloNativeLib.dir/
-  TARGET_FILE = libhelloNativeLib.so
-  TARGET_PDB = libhelloNativeLib.pdb
+  TARGET_COMPILE_PDB = CMakeFiles/helloSharedLib.dir/
+  TARGET_FILE = libhelloSharedLib.so
+  TARGET_PDB = libhelloSharedLib.pdb
+
+# =============================================================================
+# Object build statements for STATIC_LIBRARY target helloStaticLib
+
+
+#############################################
+# Order-only phony target for helloStaticLib
+
+build cmake_object_order_depends_target_helloStaticLib: phony || CMakeFiles/helloStaticLib.dir
+
+build CMakeFiles/helloStaticLib.dir/helloStaticLib.cpp.o: CXX_COMPILER__helloStaticLib_Debug /Users/wesley_chen/GitHub_Projects/HelloAndroid/HelloCppVendorLibrary/vendor_library/helloStaticLib.cpp || cmake_object_order_depends_target_helloStaticLib
+  DEP_FILE = CMakeFiles/helloStaticLib.dir/helloStaticLib.cpp.o.d
+  FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fno-limit-debug-info  -fPIC
+  INCLUDES = -I/Users/wesley_chen/GitHub_Projects/HelloAndroid/HelloCppVendorLibrary/vendor_library/src/main/cpp/include
+  OBJECT_DIR = CMakeFiles/helloStaticLib.dir
+  OBJECT_FILE_DIR = CMakeFiles/helloStaticLib.dir
+  TARGET_COMPILE_PDB = CMakeFiles/helloStaticLib.dir/helloStaticLib.pdb
+  TARGET_PDB = libhelloStaticLib.pdb
+
+build CMakeFiles/helloStaticLib.dir/jni_helloStaticLib.cpp.o: CXX_COMPILER__helloStaticLib_Debug /Users/wesley_chen/GitHub_Projects/HelloAndroid/HelloCppVendorLibrary/vendor_library/jni_helloStaticLib.cpp || cmake_object_order_depends_target_helloStaticLib
+  DEP_FILE = CMakeFiles/helloStaticLib.dir/jni_helloStaticLib.cpp.o.d
+  FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fno-limit-debug-info  -fPIC
+  INCLUDES = -I/Users/wesley_chen/GitHub_Projects/HelloAndroid/HelloCppVendorLibrary/vendor_library/src/main/cpp/include
+  OBJECT_DIR = CMakeFiles/helloStaticLib.dir
+  OBJECT_FILE_DIR = CMakeFiles/helloStaticLib.dir
+  TARGET_COMPILE_PDB = CMakeFiles/helloStaticLib.dir/helloStaticLib.pdb
+  TARGET_PDB = libhelloStaticLib.pdb
+
+
+# =============================================================================
+# Link build statements for STATIC_LIBRARY target helloStaticLib
+
+
+#############################################
+# Link the static library libhelloStaticLib.a
+
+build libhelloStaticLib.a: CXX_STATIC_LIBRARY_LINKER__helloStaticLib_Debug CMakeFiles/helloStaticLib.dir/helloStaticLib.cpp.o CMakeFiles/helloStaticLib.dir/jni_helloStaticLib.cpp.o
+  LANGUAGE_COMPILE_FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fno-limit-debug-info
+  OBJECT_DIR = CMakeFiles/helloStaticLib.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_COMPILE_PDB = CMakeFiles/helloStaticLib.dir/helloStaticLib.pdb
+  TARGET_FILE = libhelloStaticLib.a
+  TARGET_PDB = libhelloStaticLib.pdb
 
 
 #############################################
 # Utility command for edit_cache
 
 build CMakeFiles/edit_cache.util: CUSTOM_COMMAND
-  COMMAND = cd /Users/wesley_chen/GitHub_Projects/HelloAndroid/temp/cpp/out && /Users/wesley_chen/Library/Android/sdk/cmake/3.22.1/bin/ccmake -S/Users/wesley_chen/GitHub_Projects/HelloAndroid/temp/cpp -B/Users/wesley_chen/GitHub_Projects/HelloAndroid/temp/cpp/out
+  COMMAND = cd /Users/wesley_chen/GitHub_Projects/HelloAndroid/HelloCppVendorLibrary/vendor_library/out && /Users/wesley_chen/Library/Android/sdk/cmake/3.22.1/bin/ccmake -S/Users/wesley_chen/GitHub_Projects/HelloAndroid/HelloCppVendorLibrary/vendor_library -B/Users/wesley_chen/GitHub_Projects/HelloAndroid/HelloCppVendorLibrary/vendor_library/out
   DESC = Running CMake cache editor...
   pool = console
   restat = 1
@@ -107,7 +151,7 @@ build edit_cache: phony CMakeFiles/edit_cache.util
 # Utility command for rebuild_cache
 
 build CMakeFiles/rebuild_cache.util: CUSTOM_COMMAND
-  COMMAND = cd /Users/wesley_chen/GitHub_Projects/HelloAndroid/temp/cpp/out && /Users/wesley_chen/Library/Android/sdk/cmake/3.22.1/bin/cmake --regenerate-during-build -S/Users/wesley_chen/GitHub_Projects/HelloAndroid/temp/cpp -B/Users/wesley_chen/GitHub_Projects/HelloAndroid/temp/cpp/out
+  COMMAND = cd /Users/wesley_chen/GitHub_Projects/HelloAndroid/HelloCppVendorLibrary/vendor_library/out && /Users/wesley_chen/Library/Android/sdk/cmake/3.22.1/bin/cmake --regenerate-during-build -S/Users/wesley_chen/GitHub_Projects/HelloAndroid/HelloCppVendorLibrary/vendor_library -B/Users/wesley_chen/GitHub_Projects/HelloAndroid/HelloCppVendorLibrary/vendor_library/out
   DESC = Running CMake to regenerate build system...
   pool = console
   restat = 1
@@ -117,7 +161,9 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 # =============================================================================
 # Target aliases.
 
-build helloNativeLib: phony libhelloNativeLib.so
+build helloSharedLib: phony libhelloSharedLib.so
+
+build helloStaticLib: phony libhelloStaticLib.a
 
 # =============================================================================
 # Folder targets.
@@ -125,9 +171,9 @@ build helloNativeLib: phony libhelloNativeLib.so
 # =============================================================================
 
 #############################################
-# Folder: /Users/wesley_chen/GitHub_Projects/HelloAndroid/temp/cpp/out
+# Folder: /Users/wesley_chen/GitHub_Projects/HelloAndroid/HelloCppVendorLibrary/vendor_library/out
 
-build all: phony libhelloNativeLib.so
+build all: phony libhelloSharedLib.so libhelloStaticLib.a
 
 # =============================================================================
 # Built-in targets

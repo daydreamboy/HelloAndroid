@@ -6,11 +6,11 @@
 
 namespace HelloNativeLib {
 
-class HelloWorld {
+class HelloStaticLib {
 public:
-    virtual ~HelloWorld() {}
+    virtual ~HelloStaticLib() {}
 
-    static std::shared_ptr<HelloWorld> create();
+    static std::shared_ptr<HelloStaticLib> create();
 
     virtual std::string fromCpp() = 0;
 };

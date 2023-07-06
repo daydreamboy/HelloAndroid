@@ -4,23 +4,28 @@
 cmake_minimum_required(VERSION 3.22.1)
 
 # Declares and names the project.
-project("helloNativeLib")
-
-# Specifies a library name, specifies whether the library is STATIC or
-# SHARED, and provides relative paths to the source code. You can
-# define multiple libraries by adding multiple add_library() commands,
-# and CMake builds them for you. When you build your app, Gradle
-# automatically packages shared libraries with your APK.
+#project("helloNativeLib")
 
 add_library( # Specifies the name of the library.
-        helloNativeLib
+        helloSharedLib
 
         # Sets the library as a shared library.
         SHARED
 
         # Provides a relative path to your source file(s).
-        helloNativeLib.cpp
-        jni.cpp)
+        helloSharedLib.cpp
+        jni_helloSharedLib.cpp)
+
+add_library( # Specifies the name of the library.
+       helloStaticLib
+
+       # Sets the library as a static library.
+       STATIC
+
+       # Provides a relative path to your source file(s).
+       helloStaticLib.cpp
+       jni_helloStaticLib.cpp
+)
 
 # Specifies a path to native header files.
 include_directories(src/main/cpp/include/)
@@ -33,10 +38,9 @@ find_library( # Defines the name of the path variable that stores the
         # CMake needs to locate.
         log )
 
-# Links your native library against one or more other native libraries.
+## Links your native library against one or more other native libraries.
 target_link_libraries( # Specifies the target library.
-        helloNativeLib
-
+        helloSharedLib
         # Links the log library to the target library.
         ${log-lib} )
 

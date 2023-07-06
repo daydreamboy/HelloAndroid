@@ -504,13 +504,117 @@ std::string HelloWorldImpl::fromCpp() {
 
 
 
-### (2) Android应用集成C++动态库
+### (2) Android应用集成C++动态库或静态库
+
+如果Android应用使用的C++代码，不在Android应用中编译，而是以动态库或静态库的集成到Android应用中。那么需要下面几个步骤：
+
+* 准备.so或者.a文件
+* 创建支持C++源码编译的Android工程
+* 配置Android应用的build.gradle和CMakeList.txt
+
+其中第二步实际和直接Android Studio的Native C++模板是一样的，只不过换成手动来完成。
 
 
 
-a. 准备so文件
+#### a. 准备.so或者.a文件
 
-3、Android Studio
+这个步骤实际是比较复杂的过程，需要将C++源码编译成Android系统上的动态库(.so文件)或者静态库(.a文件)。这里在MacOS平台上使用CMake工具来简单示例如何编译这两种文件。
+
+
+
+
+
+#### b. 创建支持C++源码编译的Android工程
+
+这个步骤，实际和使用C++源码编译一样，只不过这个Android工程的C++源码起到占位的作用。
+
+有两种方式创建支持C++源码编译的Android工程
+
+* 使用Android Studio的Native C++模板
+* 手动添加C++相关文件和配置文件
+
+这里采用第二种方式：和Native C++模板保持一致，在src/main/cpp路径下面（没有则创建对应文件夹），添加dummy.cpp文件和CMakeList.txt。
+
+* dummy.cpp，是为了让Android Studio在apk里面生成so文件，如果没有任何源码编译，只是链接动态库或静态库，则不会有so文件
+* CMakeList.txt，是提供给Android Studio，内容下面再介绍。
+
+dummy.cpp的内容，如下
+
+```c++
+static void __dummy(void) {}
+```
+
+其实内容随便写一个内部函数，不让外部使用就行。
+
+
+
+#### c. 配置build.gradle和CMakeList.txt
+
+上面创建的Android工程，实际还不能支持C++编译，需要配置build.gradle和CMakeList.txt。
+
+在Android应用工程的app文件夹下，找到build.gradle文件，添加externalNativeBuild这个gradle插件配置，如下
+
+```groovy
+android {
+    ...
+    externalNativeBuild {
+        cmake {
+            // Provides a relative path to your CMake build script.
+            path file('src/main/cpp/CMakeLists.txt')
+        }
+    }
+}
+```
+
+这里让gradle能执行cmake来编译C++，并且gradle会打包so文件到apk中。
+
+
+
+CMakeLists.txt的内容，如下
+
+```cmake
+cmake_minimum_required(VERSION 3.22.1)
+
+project("helloNativeLib")
+
+add_library(
+        # Specifies the name of the library.
+        helloNativeLib
+
+        # Sets the library as a shared library.
+        SHARED
+
+        # Note: add a dummy cpp
+        dummy.cpp)
+
+add_library(
+        # Specifies the name of the library.
+        importedSharedLib
+
+        # Sets the library as a shared library.
+        SHARED
+
+        # Note: Indicates the library file outside our project
+        IMPORTED)
+
+set_target_properties(
+        importedSharedLib
+        PROPERTIES
+        IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../../vendor_library/out/libhelloSharedLib.so
+)
+
+target_link_libraries(
+        helloNativeLib
+        importedSharedLib
+)
+```
+
+* add_library，对应有两个。添加两个target：helloNativeLib和importedSharedLib。
+
+* target_link_libraries，第一个参数是目标target，也是so文件的名字，组成lib{name}.so形式，第二个参数则依赖目标target的target。
+  * 这里可以理解为helloNativeLib依赖于importedSharedLib
+
+
 
 
 
