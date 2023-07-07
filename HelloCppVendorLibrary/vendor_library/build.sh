@@ -6,13 +6,13 @@ ABI=x86_64
 MINSDKVERSION=33
 BUILD_TYPE=Debug
 OTHER_ARGS=
-GEN_HOME=$(pwd)/out
+OUT_HOME=$(pwd)/out
 
-rm -rf ${GEN_HOME}
-mkdir ${GEN_HOME}
+rm -rf ${OUT_HOME}
+mkdir ${OUT_HOME}
 
 $CMAKE_HOME/cmake \
-    -B${GEN_HOME} \
+    -B${OUT_HOME} \
     -DANDROID_ABI=${ABI} \
     -DANDROID_PLATFORM=android-${MINSDKVERSION} \
     -DANDROID_NDK=${NDK} \
