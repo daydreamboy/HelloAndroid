@@ -520,7 +520,96 @@ std::string HelloWorldImpl::fromCpp() {
 
 这个步骤实际是比较复杂的过程，需要将C++源码编译成Android系统上的动态库(.so文件)或者静态库(.a文件)。这里在MacOS平台上使用CMake工具来简单示例如何编译这两种文件。
 
+CMakeLists.txt内容，如下
 
+```cmake
+# Sets the minimum version of CMake required to build your native library.
+# This ensures that a certain set of CMake features is available to
+# your build.
+cmake_minimum_required(VERSION 3.22.1)
+
+# Declares and names the project.
+project("vendor library")
+
+add_library( # Specifies the name of the library.
+        helloSharedLib
+
+        # Sets the library as a shared library.
+        SHARED
+
+        # Provides a relative path to your source file(s).
+        helloSharedLib.cpp
+        jni_helloSharedLib.cpp)
+
+add_library( # Specifies the name of the library.
+       helloStaticLib
+
+       # Sets the library as a static library.
+       STATIC
+
+       # Provides a relative path to your source file(s).
+       helloStaticLib.cpp
+       jni_helloStaticLib.cpp
+)
+
+# Specifies a path to native header files.
+include_directories(src/main/cpp/include/)
+
+find_library( # Defines the name of the path variable that stores the
+        # location of the NDK library.
+        log-lib
+
+        # Specifies the name of the NDK library that
+        # CMake needs to locate.
+        log )
+
+## Links your native library against one or more other native libraries.
+target_link_libraries( # Specifies the target library.
+        helloSharedLib
+        # Links the log library to the target library.
+        ${log-lib} )
+```
+
+cmake命令有许多参数，为了方便，编写一个简单脚本，如下
+
+```shell
+set -x
+
+CMAKE_HOME=~/Library/Android/sdk/cmake/3.22.1/bin
+NDK=~/Library/Android/sdk/ndk/25.1.8937393
+ABI=x86_64
+MINSDKVERSION=33
+BUILD_TYPE=Debug
+OTHER_ARGS=
+OUT_HOME=$(pwd)/out
+
+rm -rf ${OUT_HOME}
+mkdir ${OUT_HOME}
+
+$CMAKE_HOME/cmake \
+    -B${OUT_HOME} \
+    -DANDROID_ABI=${ABI} \
+    -DANDROID_PLATFORM=android-${MINSDKVERSION} \
+    -DANDROID_NDK=${NDK} \
+    -DCMAKE_ANDROID_ARCH_ABI=${ABI} \
+    -DCMAKE_ANDROID_NDK=${NDK} \
+    -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+    -DCMAKE_MAKE_PROGRAM=${CMAKE_HOME}/ninja \
+    -DCMAKE_SYSTEM_NAME=Android \
+    -DCMAKE_TOOLCHAIN_FILE=${NDK}/build/cmake/android.toolchain.cmake \
+    -GNinja \
+    -H. \
+    ${OTHER_ARGS}
+
+$CMAKE_HOME/ninja -C out
+```
+
+上面部分选项参考Android官方文档[^13]
+
+说明
+
+> NDK的路径，可以通过 Tools > SDK Manager > SDK Tools[^14]
 
 
 
@@ -528,7 +617,7 @@ std::string HelloWorldImpl::fromCpp() {
 
 这个步骤，实际和使用C++源码编译一样，只不过这个Android工程的C++源码起到占位的作用。
 
-有两种方式创建支持C++源码编译的Android工程
+有两种方式创建支持C++源码编译的Android工程[^12]
 
 * 使用Android Studio的Native C++模板
 * 手动添加C++相关文件和配置文件
@@ -575,17 +664,21 @@ CMakeLists.txt的内容，如下
 ```cmake
 cmake_minimum_required(VERSION 3.22.1)
 
-project("helloNativeLib")
+project("import vendor library")
+
+## Step1: Add target helloStaticLib for placeholder
 
 add_library(
         # Specifies the name of the library.
-        helloNativeLib
+        helloStaticLib
 
         # Sets the library as a shared library.
         SHARED
 
         # Note: add a dummy cpp
         dummy.cpp)
+
+## Step2: Add target importedSharedLib for shared library
 
 add_library(
         # Specifies the name of the library.
@@ -603,30 +696,111 @@ set_target_properties(
         IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../../vendor_library/out/libhelloSharedLib.so
 )
 
+## Step3: Add target importedStaticLib for static library
+
+add_library(
+        # Specifies the name of the library.
+        importedStaticLib
+
+        # Sets the library as a shared library.
+        STATIC
+
+        # Note: Indicates the library file outside our project
+        IMPORTED)
+
+set_target_properties(
+        importedStaticLib
+        PROPERTIES
+        IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../../vendor_library/out/libhelloStaticLib.a
+)
+
+## Step4: Add rest targets dependency to dest target
+
 target_link_libraries(
-        helloNativeLib
+        helloStaticLib
         importedSharedLib
+)
+
+find_library( # Defines the name of the path variable that stores the
+        # location of the NDK library.
+        log-lib
+
+        # Specifies the name of the NDK library that
+        # CMake needs to locate.
+        log )
+
+target_link_libraries( # Specifies the target library.
+        helloStaticLib
+        # Links the log library to the target library.
+        ${log-lib}
+)
+
+# @see https://stackoverflow.com/a/52952274
+target_link_libraries(
+        helloStaticLib -Wl,--whole-archive importedStaticLib -Wl,--no-whole-archive
 )
 ```
 
-* add_library，对应有两个。添加两个target：helloNativeLib和importedSharedLib。
+* add_library，用于定义target
+  * 第一个参数是target名字
+  * 第二个参数是SHARED或STATIC，表示动态库或者静态库
+  * 剩余参数可以特殊关键词或者源文件路径。例如IMPORTED表示该target是外部导入的库
 
-* target_link_libraries，第一个参数是目标target，也是so文件的名字，组成lib{name}.so形式，第二个参数则依赖目标target的target。
-  * 这里可以理解为helloNativeLib依赖于importedSharedLib
-
-
-
-
-
-TODO
-
-https://bowser--f-medium-com.translate.goog/link-c-c-library-dependencies-to-your-own-c-c-code-in-an-android-application-using-cmake-79a165202ff9?_x_tr_sl=en&_x_tr_tl=zh-CN&_x_tr_hl=zh-CN&_x_tr_pto=sc
-
-
-
+* target_link_libraries，用于确定目标target的依赖关系
+  * 第一个参数是目标target，一般是可执行文件。这个目标target也需要通过add_library来定义。
+  * 剩余参数是依赖的target。
+* set_target_properties，用于设置target属性
+  * 第一个参数是target名
+  * 第二个参数是PROPERTIES
+  * 第三个参数是属性的KV
+* find_library，用于查询Android系统库，并定义变量名。例如这里查询log，并定义变量名为log-lib
 
 
-## 3、常用文档地址
+
+#### d. 加载C++动态库和调用JNI函数
+
+加载C++动态库和调用JNI函数，和使用C++源码编译是一样的，这里不再赘述。
+
+
+
+## 3、Android常见任务
+
+### (1) 查看so文件的符号信息
+
+Android上so文件是ELF格式，不能使用nm命令。使用objdump命令可以查看ELF格式。
+
+
+
+#### a. 符号表(symbol table)和动态符号表(dynamic symbol table)
+
+so文件中为符号表(symbol table)和动态符号表(dynamic symbol table)，一般符号表没有符号信息，如下
+
+```shell
+$ objdump -t libhelloSharedLib.so 
+
+libhelloSharedLib.so:	file format elf64-x86-64
+
+SYMBOL TABLE:
+```
+
+使用`-t`选项，可以查看符号表(symbol table)，可以看到上面libhelloSharedLib.so的符号表没有内容。
+
+使用`-T`可以查看动态符号表(dynamic symbol table)，`-C`用于demangle符号[^15]。举个例子，如下
+
+```shell
+$ objdump -TC libhelloSharedLib.so | grep Java_com
+0000000000025560 g    DF .text	00000000000000dd              Java_com_wc_hellocppvendorlibrary_MainActivity_stringFromHelloSharedLib
+$ objdump -TC libhelloStaticLib.so | grep Java_com 
+0000000000006740 g    DF .text	00000000000000dd              Java_com_wc_hellocppvendorlibrary_MainActivity_stringFromHelloStaticLib
+```
+
+上面搜索2个JNI函数的符号：Java_com_wc_hellocppvendorlibrary_MainActivity_stringFromHelloSharedLib和Java_com_wc_hellocppvendorlibrary_MainActivity_stringFromHelloStaticLib
+
+这种方式常用于Android NDK开发过程中检查apk中so文件，是否集成特定的C/C++函数符号。
+
+
+
+## 4、常用文档地址
 
 ### (1) 下载Android Studio
 
@@ -661,4 +835,9 @@ https://developer.android.com/courses/kotlin-android-fundamentals/overview?hl=zh
 [^9]:https://developer.android.com/ndk/samples/sample_hellojni?hl=zh-cn
 [^10]:https://stackoverflow.com/questions/19186915/cant-include-ndk-header-files
 [^11]:https://developer.android.com/ndk/reference/group/logging
+
+[^12]:https://bowser-f.medium.com/link-c-c-library-dependencies-to-your-own-c-c-code-in-an-android-application-using-cmake-79a165202ff9
+[^13]:https://developer.android.com/ndk/guides/cmake?hl=zh-cn#build-command
+[^14]:https://developer.android.com/studio/projects/install-ndk?hl=zh-cn
+[^15]:https://stackoverflow.com/questions/34732/how-do-i-list-the-symbols-in-a-so-file
 
