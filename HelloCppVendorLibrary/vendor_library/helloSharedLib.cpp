@@ -22,6 +22,6 @@ std::shared_ptr<HelloSharedLib> HelloSharedLib::create() {
 std::string HelloWorldImpl::fromCpp() {
     __android_log_print(ANDROID_LOG_DEBUG, "NativeLibTag", "%s function called", "HelloWorldImpl::fromCpp");
 
-    return "Hello From C++ shared libary!";
+    return "Hello From C++ SHARED library!";
 }
 

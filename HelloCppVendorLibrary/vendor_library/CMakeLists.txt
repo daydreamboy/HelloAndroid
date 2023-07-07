@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.22.1)
 
 # Declares and names the project.
-#project("helloNativeLib")
+project("vendor library")
 
 add_library( # Specifies the name of the library.
         helloSharedLib

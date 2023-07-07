@@ -3,13 +3,13 @@
 # your build.
 cmake_minimum_required(VERSION 3.22.1)
 
-project("helloNativeLib")
+project("import vendor library")
 
-## Step1: Add target helloNativeLib for placeholder
+## Step1: Add target helloStaticLib for placeholder
 
 add_library(
         # Specifies the name of the library.
-        helloNativeLib
+        helloStaticLib
 
         # Sets the library as a shared library.
         SHARED
@@ -35,7 +35,7 @@ set_target_properties(
         IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../../vendor_library/out/libhelloSharedLib.so
 )
 
-## Step3: Add target importedSharedLib for shared library
+## Step3: Add target importedStaticLib for static library
 
 add_library(
         # Specifies the name of the library.
@@ -56,8 +56,26 @@ set_target_properties(
 ## Step4: Add rest targets dependency to dest target
 
 target_link_libraries(
-        helloNativeLib
+        helloStaticLib
         importedSharedLib
-        importedStaticLib
+)
+
+find_library( # Defines the name of the path variable that stores the
+        # location of the NDK library.
+        log-lib
+
+        # Specifies the name of the NDK library that
+        # CMake needs to locate.
+        log )
+
+target_link_libraries( # Specifies the target library.
+        helloStaticLib
+        # Links the log library to the target library.
+        ${log-lib}
+)
+
+# @see https://stackoverflow.com/a/52952274
+target_link_libraries(
+        helloStaticLib -Wl,--whole-archive importedStaticLib -Wl,--no-whole-archive
 )
 

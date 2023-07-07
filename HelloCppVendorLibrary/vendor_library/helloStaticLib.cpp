@@ -22,6 +22,6 @@ std::shared_ptr<HelloStaticLib> HelloStaticLib::create() {
 std::string HelloStaticLibImpl::fromCpp() {
     __android_log_print(ANDROID_LOG_DEBUG, "NativeLibTag", "%s function called", "HelloStaticLibImpl::fromCpp");
 
-    return "Hello From C++ shared libary!";
+    return "Hello From C++ STATIC library!";
 }
 

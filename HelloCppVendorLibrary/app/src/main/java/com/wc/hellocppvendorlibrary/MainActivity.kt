@@ -19,8 +19,8 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         init {
-            System.loadLibrary("helloNativeLib");
-            System.loadLibrary("helloSharedLib");
+            System.loadLibrary("helloSharedLib")
+            System.loadLibrary("helloStaticLib")
         }
     }
     // Note: declare functions from C++ libraries
