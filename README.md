@@ -15,7 +15,7 @@
 
 打开Android Studio，选择File > New > New Project...，在弹出提示框中选择“Empty Activity”模板，Android Studio会创建一个带部分代码的工程。可以参考这篇Android官方文档[^1]，创建个HelloWorld应用。后面提到的Android工程，都是指Android Studio创建的工程。
 
-> 示例代码，见HelloWorld
+> 示例工程，见HelloWorld
 
 这里主要介绍Android应用的工程结构。
 
@@ -130,6 +130,8 @@ app/src
 说明
 
 > 新建工程，在Phonen and Tablet下面选择Native C++这个模板，C++ Standard选择Toolchain Default。创建好的工程，默认已经有C++代码和使用JNI接口的kotlin代码。如果了解清楚C++相关配置文件，可以采用这个方式快速搭建C++开发。
+
+> 示例工程，见HelloCppFromScratch
 
 
 
@@ -514,7 +516,9 @@ std::string HelloWorldImpl::fromCpp() {
 
 其中第二步实际和直接Android Studio的Native C++模板是一样的，只不过换成手动来完成。
 
-
+> 示例工程，见HelloCppVendorLibrary
+>
+> 
 
 #### a. 准备.so或者.a文件
 
