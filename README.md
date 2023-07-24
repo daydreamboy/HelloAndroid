@@ -518,7 +518,6 @@ std::string HelloWorldImpl::fromCpp() {
 
 > 示例工程，见HelloCppVendorLibrary
 >
-> 
 
 #### a. 准备.so或者.a文件
 
@@ -609,11 +608,21 @@ $CMAKE_HOME/cmake \
 $CMAKE_HOME/ninja -C out
 ```
 
-上面部分选项参考Android官方文档[^13]
+上面部分选项参考Android官方文档[^13]。目前ANDROID_ABI参数支持下面的值[^16]，如下
+
+| ABI                                                          | 支持的指令集                                                 | 备注                     |
+| :----------------------------------------------------------- | :----------------------------------------------------------- | :----------------------- |
+| [`armeabi-v7a`](https://developer.android.com/ndk/guides/abis?hl=zh-cn#v7a) | armeabi<br/>Thumb-2<br/>VFPv3-D16                            | 与 ARMv5/v6 设备不兼容。 |
+| [`arm64-v8a`](https://developer.android.com/ndk/guides/abis?hl=zh-cn#arm64-v8a) | AArch64                                                      | 仅限 Armv8.0。           |
+| [`x86`](https://developer.android.com/ndk/guides/abis?hl=zh-cn#x86) | x86 (IA-32)<br/>MMX<br/>SSE/2/3<br/>SSSE3                    | 不支持 MOVBE 或 SSE4。   |
+| [`x86_64`](https://developer.android.com/ndk/guides/abis?hl=zh-cn#86-64) | x86-64<br/>MMX<br/>SSE/2/3<br/>SSSE3<br/>SSE4.1、4.2<br/>POPCNT | 仅限 x86-64-v1。         |
+
+
 
 说明
 
-> NDK的路径，可以通过 Tools > SDK Manager > SDK Tools[^14]
+> 1. NDK的路径，可以通过 Tools > SDK Manager > SDK Tools[^14]
+> 2. ~/Library/Android/sdk/platform-tools下adb命令，使用`./adb devices`可以查看Android Studio是否连接android设备
 
 
 
@@ -844,4 +853,6 @@ https://developer.android.com/courses/kotlin-android-fundamentals/overview?hl=zh
 [^13]:https://developer.android.com/ndk/guides/cmake?hl=zh-cn#build-command
 [^14]:https://developer.android.com/studio/projects/install-ndk?hl=zh-cn
 [^15]:https://stackoverflow.com/questions/34732/how-do-i-list-the-symbols-in-a-so-file
+
+[^16]:https://developer.android.com/ndk/guides/abis?hl=zh-cn#cmake
 
